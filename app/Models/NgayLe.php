@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class User extends Model
+class NgayLe extends Model
 {
+    protected $table = 'NgayLe';
+    protected $primaryKey = 'Id';
     public $timestamps = false;
 
     protected $fillable = [
-        'name',
-        'phone',
-        'address',
-        'birthday',
-        'gender'
+        'Ngay',
+        'TenNgayLe'
     ];
 }
