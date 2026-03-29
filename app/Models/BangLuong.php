@@ -15,7 +15,9 @@ class BangLuong extends Model
         'Thang',
         'Nam',
         'LuongCoBan',
-        'TongNgayCong',
+        'TongNgayCong', 
+        'TongGioTangCa',   // ✅ thêm
+        'TienTangCa',      // ✅ thêm
         'Thuong',
         'Phat',
         'TongLuong'
