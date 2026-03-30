@@ -33,6 +33,31 @@ class BangLuongService
                 $q->where('Ten', 'like', '%' . $filters['ten'] . '%');
             });
         }
+        
+        $sortBy = $filters['sort_by'] ?? null;
+        $sortOrder = $filters['sort_order'] ?? 'desc';
+        
+        if ($sortBy) {
+            switch ($sortBy) {
+                case 'tong_luong':
+                    $query->orderBy('TongLuong', $sortOrder);
+                    break;
+        
+                case 'ngay_cong':
+                    $query->orderBy('TongNgayCong', $sortOrder);
+                    break;
+        
+                case 'tham_nien':
+                    $query->orderBy(
+                        \App\Models\NhanVien::select('NgayTao')
+                            ->whereColumn('NhanVien.Id', 'BangLuong.NhanVienId'),
+                        $sortOrder
+                    );
+                    break;
+            }
+        } else {
+            $query->orderBy('Id', 'desc');
+        }
     
         return $query->get();
     }

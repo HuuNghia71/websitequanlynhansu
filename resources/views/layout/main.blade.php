@@ -91,6 +91,14 @@ function loadPage(url) {
             let content = doc.querySelector('#app-content');
 
             document.getElementById('content').innerHTML = content.innerHTML;
+
+            // 👉 chạy lại script nếu có
+            let scripts = doc.querySelectorAll("script");
+            scripts.forEach(oldScript => {
+                let newScript = document.createElement("script");
+                newScript.text = oldScript.text;
+                document.body.appendChild(newScript);
+            });
         });
 }
 
