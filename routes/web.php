@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PhongBanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +26,9 @@ Route::get('/nhanvien', function () {
     return view('nhanvien.index');
 });
 
-Route::get('/phongban', function () {
-    return view('phongban.index');
-});
+
+Route::get('/phongban',
+ [PhongBanController::class, 'index'])->name('phongban.index');
 
 Route::get('/congviec', function () {
     return view('congviec.index');

@@ -18,4 +18,9 @@ class NhanVienPhongBan extends Model
         'NgayKetThuc',
         'DangLam'
     ];
+    // Lấy thông tin chi tiết của nhân viên trong lịch sử phòng ban
+    public function nhanVien()
+    {
+        return $this->belongsTo(NhanVien::class, 'NhanVienId', 'Id');
+    }
 }
