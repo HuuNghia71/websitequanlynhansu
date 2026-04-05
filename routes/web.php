@@ -41,3 +41,9 @@ Route::get('/chamcong', function () {
 Route::get('/luong', function () {
     return view('luong.index');
 });
+Route::post('/phongban/{id}/phan-cong',
+ [PhongBanController::class, 'phanCongNhanVien'])->name('phongban.phancong');
+
+ // Khi click vào phòng ban, gọi Route này để xem danh sách nhân viên
+Route::get('/phongban/{id}/nhan-vien',
+ [PhongBanController::class, 'danhSachNhanVien'])->name('phongban.nhanvien');

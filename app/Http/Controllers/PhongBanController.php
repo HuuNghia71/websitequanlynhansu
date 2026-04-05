@@ -75,12 +75,14 @@ class PhongBanController extends Controller
 
         \Illuminate\Support\Facades\DB::beginTransaction();
         try {
-            if ($dangLamPhongKhac) {
-                $dangLamPhongKhac->update([
-                    'DangLam' => 0,
-                    'NgayKetThuc' => \Carbon\Carbon::today()->toDateString()
-                ]);
-            }
+           if ($dangLamPhongKhac) {
+                if ($dangLamPhongKhac->PhongBanId == $id) {
+                    return response()->json(['message' => 'Nhân viên này hiện đã ở trong phòng ban này rồi.'], 400);
+                } else {
+                    // Chặn không cho thêm nếu đang ở phòng ban khác
+                    return response()->json(['message' => 'Nhân viên này đang thuộc một phòng ban khác. Vui lòng gỡ khỏi phòng ban cũ trước!'], 400);
+                }
+}
 
             \App\Models\NhanVienPhongBan::create([
                 'NhanVienId' => $nhanVienId,
@@ -176,5 +178,29 @@ class PhongBanController extends Controller
                             ->get();
 
         return view('phongban.ngaycong', compact('chamCongs', 'thang', 'nam'));
+    }
+    // 9. Xem danh sách nhân viên trong một phòng ban cụ thể
+    public function danhSachNhanVien($id)
+    {
+        // Kiểm tra xem phòng ban có tồn tại không
+        $phongBan = PhongBan::findOrFail($id);
+
+        // Lấy danh sách nhân viên ĐANG LÀM trong phòng ban này
+        // (Sử dụng model trung gian NhanVienPhongBan kết hợp với model NhanVien)
+        $danhSachNhanVien = NhanVienPhongBan::with('nhanVien') 
+            ->where('PhongBanId', $id)
+            ->where('DangLam', 1)
+            ->get();
+
+        /*
+         * Lưu ý: Để with('nhanVien') hoạt động, trong model App\Models\NhanVienPhongBan 
+         * bạn phải khai báo quan hệ:
+         * public function nhanVien() {
+         * return $this->belongsTo(NhanVien::class, 'NhanVienId');
+         * }
+         */
+
+        // Trả về giao diện (Blade) kèm theo dữ liệu
+        return view('phongban.danhsachnhanvien', compact('phongBan', 'danhSachNhanVien'));
     }
 }

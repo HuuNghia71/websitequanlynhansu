@@ -95,6 +95,9 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Xác nhận</button>
                     </div>
+                    <a href="{{ route('phongban.nhanvien', $pb->Id) }}" class="btn btn-info btn-sm">
+                     👁️ Xem nhân viên
+                    </a>
                 </form>
             </div>
         </div>
