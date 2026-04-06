@@ -11,15 +11,15 @@ class ChamCong extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'NhanVienId',
-        'Ngay',
-        'GioVao',
-        'GioRa',
-        'SoPhutTre',
-        'SoGioLam',
-        'SoNgayCong',
-        'LaNgayLe',
-        'SoGioTangCa'
+            'NhanVienId',
+            'Ngay',
+            'GioVao',
+            'GioRa',
+            'SoPhutTre',
+            'SoGioLam',
+            'SoNgayCong',
+            'LaNgayLe',
+            'SoGioTangCa'
     ];
 
     public function nhanVien()

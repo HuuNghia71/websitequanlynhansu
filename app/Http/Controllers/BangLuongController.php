@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\NhanVien;
+use App\Models\ChamCong;
+use Illuminate\Http\Request; // 👈 THÊM DÒNG NÀY
 use App\Http\Requests\LuongIndexRequest;
 use App\Services\BangLuongService;
 use App\Http\Requests\StoreLuongRequest;
@@ -25,7 +27,7 @@ class BangLuongController extends Controller
             'data' => $data
         ]);
     }
-    // 🔍 Xem 1
+
     public function show($id)
     {
         $data = $this->service->findById($id);
@@ -36,7 +38,6 @@ class BangLuongController extends Controller
         ]);
     }
 
-    // ➕ Thêm
     public function store(StoreLuongRequest $request)
     {
         $data = $this->service->create($request->validated());
@@ -48,7 +49,6 @@ class BangLuongController extends Controller
         ]);
     }
 
-    // ✏️ Sửa
     public function update(UpdateLuongRequest $request, $id)
     {
         $data = $this->service->update($id, $request->validated());
@@ -60,7 +60,6 @@ class BangLuongController extends Controller
         ]);
     }
 
-    // ❌ Xóa
     public function destroy($id)
     {
         $this->service->delete($id);
@@ -70,4 +69,42 @@ class BangLuongController extends Controller
             'message' => 'Xóa thành công'
         ]);
     }
+
+    // ✅ API lấy chấm công
+    public function getChamCong(Request $request)
+{
+    try {
+        $nhanvien_id = $request->nhanvien_id;
+        $thang = $request->thang;
+        $nam = $request->nam;
+
+        $chamCong = ChamCong::where('NhanVienId', $nhanvien_id)
+            ->whereMonth('Ngay', $thang)
+            ->whereYear('Ngay', $nam)
+            ->get();
+
+            return response()->json([
+                'success' => true, // ✅ THÊM DÒNG NÀY
+                'data' => [
+                    'cham_cong' => $chamCong,
+                    'tong_ngay_cong' => $chamCong->count(),
+                    'tong_phut_tre' => $chamCong->sum('SoPhutTre')
+                ]
+            ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+public function getNhanVien()
+{
+    $data = NhanVien::select('Id', 'Ten')->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => $data
+    ]);
+}
 }

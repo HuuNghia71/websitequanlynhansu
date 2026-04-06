@@ -156,12 +156,29 @@ class BangLuongService
         return $luong;
     }
 
-    // ❌ Xóa
+    // ❌ Xóa   
     public function delete($id)
     {
         $luong = BangLuong::findOrFail($id);
         $luong->delete();
 
         return true;
+    }
+
+    public function getChamCongByNhanVien($nhanVienId, $thang, $nam)
+    {
+        $data = ChamCong::where('NhanVienId', $nhanVienId)
+            ->whereMonth('Ngay', $thang)
+            ->whereYear('Ngay', $nam)
+            ->get();
+    
+        $tongNgayCong = $data->sum('SoNgayCong');
+        $tongPhutTre = $data->sum('SoPhutTre');
+    
+        return [
+            'cham_cong' => $data,
+            'tong_ngay_cong' => $tongNgayCong,
+            'tong_phut_tre' => $tongPhutTre
+        ];
     }
 }

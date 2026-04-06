@@ -27,4 +27,4 @@ class BangLuong extends Model
     {
         return $this->belongsTo(NhanVien::class, 'NhanVienId');
     }
-}
+} 
