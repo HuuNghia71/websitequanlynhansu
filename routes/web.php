@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\NhanVienController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,12 +20,10 @@ Route::get('/login', function () {
     return view('auth.login');
 });
 
-// 👉 CÁC TRANG MODULE (trả về HTML fragment để AJAX load)
+// 👉 QUẢN LÝ NHÂN VIÊN (CRUD)
+Route::resource('nhanvien', NhanVienController::class);
 
-Route::get('/nhanvien', function () {
-    return view('nhanvien.index');
-});
-
+// 👉 CÁC TRANG MODULE KHÁC (trả về HTML fragment để AJAX load)
 Route::get('/phongban', function () {
     return view('phongban.index');
 });
