@@ -149,7 +149,7 @@
     </div>
 
     <script>
-    const API_URL = "http://127.0.0.1:8000/api/luong";
+    var API_URL = "http://127.0.0.1:8000/api/luong";
 
     async function loadData() {
     // Lấy giá trị từ các ô input (lúc mới mở trang sẽ là rỗng "")
@@ -404,12 +404,11 @@ async function createLuong(nhanvien_id, thang, nam) {
         alert("❌ Lỗi tạo lương");
     }
 }
-    // Thay vì chỉ ghi loadData(); hãy ghi như sau:
-window.addEventListener('DOMContentLoaded', (event) => {
-    loadData();
-    loadNhanVien();   // 👈 thêm
-    initDropdown();   // 👈 thêm
-});
+
+// Gọi trực tiếp để dữ liệu hiện ngay khi script được nạp vào trang qua AJAX
+loadData();
+loadNhanVien();
+initDropdown();
     </script>
 </body>
 </html>
