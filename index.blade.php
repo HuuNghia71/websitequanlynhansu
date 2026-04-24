@@ -1,494 +1,464 @@
-<!-- resources/views/chamcong/index.blade.php -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý công việc</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-<div id="app-content">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background: #1f2937;
+            color: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+        }
 
-    <!-- CSRF -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+        .menu-item {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        .menu-item:hover {
+            background: #374151;
+        }
 
-    <div class="container-fluid mt-4">
+        .menu-item.active {
+            background: #2563eb;
+        }
+    </style>
+</head>
 
-        <!-- HEADER -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="text-primary mb-0">
-                <i class="fas fa-clock me-2"></i>
-                Quản Lý Chấm Công
-            </h3>
+<body>
 
-            <div class="text-muted fw-semibold" id="realTimeClock">
-                Đang tải thời gian...
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <div class="col-2 sidebar p-3">
+            <h4 class="mb-4">💼 HR System</h4>
+
+            <div class="menu-item" onclick="setActive(this); loadPage('/nhanvien')">
+                <i class="bi bi-people"></i>
+                <span>Nhân viên</span>
+            </div>
+
+            <div class="menu-item" onclick="setActive(this); loadPage('/phongban')">
+                <i class="bi bi-building"></i>
+                <span>Phòng ban</span>
+            </div>
+
+            <div class="menu-item active" onclick="setActive(this); loadPage('/congviec')">
+                <i class="bi bi-list-task"></i>
+                <span>Công việc</span>
+            </div>
+
+            <div class="menu-item" onclick="setActive(this); loadPage('/chamcong')">
+                <i class="bi bi-clock-history"></i>
+                <span>Chấm công</span>
+            </div>
+
+            <div class="menu-item" onclick="setActive(this); loadPage('/luong')">
+                <i class="bi bi-cash-stack"></i>
+                <span>Lương</span>
             </div>
         </div>
 
-        <!-- CHECK IN + THỐNG KÊ -->
-        <div class="row mb-4">
+        <!-- CONTENT -->
+        <div class="col-10 p-4" id="content">
+            <div id="app-content">
+                <div class="container mt-3">
+                    <h2 class="mb-4">📋 Quản lý công việc</h2>
 
-            <!-- CHECK IN -->
-            <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body text-center py-4">
-
-                        <h5 class="text-muted mb-3">Thao tác hôm nay</h5>
-
-                        <button id="btnCheckIn"
-                            class="btn btn-success btn-lg me-2"
-                            onclick="handleCheckIn()">
-                            <i class="fas fa-sign-in-alt me-2"></i>
-                            Check-in
-                        </button>
-
-                        <button id="btnCheckOut"
-                            class="btn btn-danger btn-lg"
-                            onclick="handleCheckOut()">
-                            <i class="fas fa-sign-out-alt me-2"></i>
-                            Check-out
-                        </button>
-
-                        <small class="text-muted d-block mt-3">
-                            * Giờ vào quy định: 08:00 | Giờ ra: 17:30
-                        </small>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- THỐNG KÊ -->
-            <div class="col-md-6 col-lg-8 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body">
-
-                        <h5 class="text-muted mb-3">Thống kê tháng này</h5>
-
-                        <div class="row">
+                    <!-- Form thêm / sửa công việc -->
+                    <div class="card p-3 mb-4 shadow-sm">
+                        <h5>Thêm / sửa công việc</h5>
+                        <div class="row g-3">
                             <div class="col-md-4">
-                                <div class="bg-light rounded p-3 text-center">
-                                    <h4 id="statTongCong" class="text-success fw-bold">0</h4>
-                                    <small>Tổng ngày công</small>
-                                </div>
+                                <label class="form-label">Tên công việc</label>
+                                <input type="text" id="task-title" class="form-control" placeholder="Ví dụ: Kiểm thử chức năng">
                             </div>
-
-                            <div class="col-md-4">
-                                <div class="bg-light rounded p-3 text-center">
-                                    <h4 id="statTongTre" class="text-warning fw-bold">0</h4>
-                                    <small>Tổng phút trễ</small>
-                                </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Mô tả</label>
+                                <input type="text" id="task-desc" class="form-control" placeholder="Mô tả công việc">
                             </div>
-
-                            <div class="col-md-4">
-                                <div class="bg-light rounded p-3 text-center">
-                                    <h4 id="statTongTangCa" class="text-info fw-bold">0</h4>
-                                    <small>Giờ tăng ca</small>
-                                </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ngày bắt đầu</label>
+                                <input type="date" id="task-start" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Ngày kết thúc</label>
+                                <input type="date" id="task-end" class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Trạng thái</label>
+                                <select id="task-status" class="form-select">
+                                    <option value="Chua bat dau">Chưa bắt đầu</option>
+                                    <option value="Dang thuc hien">Đang thực hiện</option>
+                                    <option value="Sap den han">Sắp đến hạn</option>
+                                    <option value="Tre">Trễ</option>
+                                    <option value="Hoan thanh">Hoàn thành</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nhân viên</label>
+                                <select id="task-employee" class="form-select">
+                                    <option value="">Chọn nhân viên</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Mã phòng ban</label>
+                                <input type="number" id="task-department" class="form-control" placeholder="ID phòng ban">
+                            </div>
+                            <div class="col-md-3 d-grid align-self-end">
+                                <button class="btn btn-success" onclick="saveTask()">Lưu công việc</button>
+                                <button class="btn btn-secondary mt-2" onclick="clearForm()">Xóa form</button>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Bộ lọc và sắp xếp -->
+                    <div class="card p-3 mb-4 shadow-sm">
+                        <h5>Bộ lọc</h5>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-3">
+                                <label class="form-label">Tìm theo tên</label>
+                                <input type="text" id="filter-text" class="form-control" placeholder="Nhập tên công việc">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Trạng thái</label>
+                                <select id="filter-status" class="form-select">
+                                    <option value="">Tất cả</option>
+                                    <option value="Chua bat dau">Chưa bắt đầu</option>
+                                    <option value="Dang thuc hien">Đang thực hiện</option>
+                                    <option value="Sap den han">Sắp đến hạn</option>
+                                    <option value="Tre">Trễ</option>
+                                    <option value="Hoan thanh">Hoàn thành</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Nhân viên</label>
+                                <select id="filter-employee" class="form-select">
+                                    <option value="">Tất cả nhân viên</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Sắp xếp</label>
+                                <div class="d-flex gap-2">
+                                    <select id="filter-sort-by" class="form-select">
+                                        <option value="created">Ngày tạo</option>
+                                        <option value="due_date">Ngày hết hạn</option>
+                                    </select>
+                                    <select id="filter-sort-order" class="form-select">
+                                        <option value="desc">Giảm dần</option>
+                                        <option value="asc">Tăng dần</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button class="btn btn-primary" onclick="loadData()">Lấy danh sách</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bảng công việc -->
+                    <div class="card shadow-sm">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0">
+                                <thead class="table-dark text-center">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên</th>
+                                        <th>Mô tả</th>
+                                        <th>Phòng ban</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hạn</th>
+                                        <th>Nhân viên</th>
+                                        <th>File</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
 
-        </div>
-
-        <!-- TABLE -->
-        <div class="card shadow-sm border-0">
-
-            <div class="card-header bg-white">
-
-                <div class="row align-items-center">
-
-                    <div class="col-md-3">
-                        <h5 class="mb-0">Lịch sử chấm công</h5>
-                    </div>
-
-                    <div class="col-md-9 text-end">
-
-                        <!-- LỌC MÃ NHÂN VIÊN -->
-                        <input
-                            type="text"
-                            id="filterMaNhanVien"
-                            class="form-control d-inline w-auto"
-                            placeholder="VD: #1 hoặc 1">
-
-                        <!-- LỌC THÁNG -->
-                        <select id="filterThang" class="form-select d-inline w-auto">
-                            @for($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
-                                    Tháng {{ $i }}
-                                </option>
-                            @endfor
-                        </select>
-
-                        <!-- LỌC NĂM -->
-                        <select id="filterNam" class="form-select d-inline w-auto">
-                            @for($y = 2025; $y <= 2030; $y++)
-                                <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>
-                                    Năm {{ $y }}
-                                </option>
-                            @endfor
-                        </select>
-
-                        <button
-                            class="btn btn-primary"
-                            onclick="loadChamCongData()">
-                            Lọc
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div class="card-body p-0">
-
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Ngày</th>
-                            <th>Mã NV</th>
-                            <th>Tên nhân viên</th>
-                            <th>Giờ vào</th>
-                            <th>Giờ ra</th>
-                            <th>Trễ (Phút)</th>
-                            <th>Số giờ làm</th>
-                            <th>Công</th>
-                            <th>Tăng ca</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="tableData">
-                        <tr>
-                            <td colspan="10" class="text-center p-4">
-                                Đang tải dữ liệu...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-            </div>
-
+            <input type="file" id="upload-file" style="display:none" onchange="handleFileChange(event)">
         </div>
 
     </div>
 </div>
 
 <script>
-
-let currentNhanVienId = document.body.dataset.userId || 1;
-
-let csrfToken = document
-    .querySelector('meta[name="csrf-token"]')
-    .getAttribute("content");
-
-/*
-|--------------------------------------------------------------------------
-| CLOCK
-|--------------------------------------------------------------------------
-*/
-
-function updateClock() {
-    const now = new Date();
-
-    document.getElementById("realTimeClock").innerHTML =
-        now.toLocaleDateString("vi-VN") + " | " +
-        now.toLocaleTimeString("vi-VN");
-}
-
-setInterval(updateClock, 1000);
-updateClock();
-
-
-/*
-|--------------------------------------------------------------------------
-| FORMAT TODAY YYYY-MM-DD
-|--------------------------------------------------------------------------
-*/
-
-function getTodayVN() {
-    const now = new Date();
-    const offset = 7 * 60;
-
-    const local = new Date(
-        now.getTime() +
-        (offset - now.getTimezoneOffset()) * 60000
-    );
-
-    return local.toISOString().split("T")[0];
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| UPDATE BUTTON STATE
-|--------------------------------------------------------------------------
-*/
-
-function updateCheckButtons(data) {
-    const btnIn = document.getElementById("btnCheckIn");
-    const btnOut = document.getElementById("btnCheckOut");
-
-    const today = getTodayVN();
-
-    const record = data.find(item =>
-        item.NhanVienId == currentNhanVienId &&
-        item.Ngay === today
-    );
-
-    btnIn.disabled = false;
-    btnOut.disabled = false;
-
-    if (record) {
-        btnIn.disabled = true;
-
-        if (record.GioRa) {
-            btnOut.disabled = true;
-        }
-    }
-
-    btnIn.classList.toggle("btn-secondary", btnIn.disabled);
-    btnOut.classList.toggle("btn-secondary", btnOut.disabled);
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| LOAD DATA
-|--------------------------------------------------------------------------
-*/
-
-function loadChamCongData() {
-    const maNhanVien = document
-        .getElementById("filterMaNhanVien")
-        .value
-        .trim();
-
-    const thang = document
-        .getElementById("filterThang")
-        .value;
-
-    const nam = document
-        .getElementById("filterNam")
-        .value;
-
-    let url = `/api/cham-cong?thang=${thang}&nam=${nam}`;
-
-    if (maNhanVien !== "") {
-        url += `&ma_nhan_vien=${encodeURIComponent(maNhanVien)}`;
-    }
-
+function loadPage(url) {
     fetch(url)
-        .then(res => res.json())
-        .then(data => {
+        .then(res => res.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, 'text/html');
+            let content = doc.querySelector('#app-content');
 
-            let html = "";
-            let tongCong = 0;
-            let tongTre = 0;
-            let tongTangCa = 0;
+            document.getElementById('content').innerHTML = content.innerHTML;
 
-            if (!data.length) {
-                html = `
-                    <tr>
-                        <td colspan="10" class="text-center text-danger p-4">
-                            Không có dữ liệu chấm công
-                        </td>
-                    </tr>
-                `;
-            } else {
-
-                data.forEach(item => {
-
-                    let tre = Math.max(
-                        0,
-                        parseInt(item.SoPhutTre || 0)
-                    );
-
-                    let gioLam = Math.max(
-                        0,
-                        parseFloat(item.SoGioLam || 0)
-                    );
-
-                    let tangCa = Math.max(
-                        0,
-                        parseFloat(item.SoGioTangCa || 0)
-                    );
-
-                    let ngayCong = parseFloat(
-                        item.SoNgayCong || 0
-                    );
-
-                    tongCong += ngayCong;
-                    tongTre += tre;
-                    tongTangCa += tangCa;
-
-                    html += `
-                        <tr>
-                            <td>${item.Ngay}</td>
-
-                            <td>
-                                <span class="fw-bold text-dark">
-                                    #${item.NhanVienId}
-                                </span>
-                            </td>
-
-                            <td class="fw-bold text-primary">
-                                ${
-                                    item.TenNhanVien
-                                    ?? item.nhan_vien?.Ten
-                                    ?? 'Chưa xác định'
-                                }
-                            </td>
-
-                            <td>
-                                ${
-                                    item.GioVao
-                                    ? item.GioVao.split(' ')[1]
-                                    : '--'
-                                }
-                            </td>
-
-                            <td>
-                                ${
-                                    item.GioRa
-                                    ? item.GioRa.split(' ')[1]
-                                    : '--'
-                                }
-                            </td>
-
-                            <td class="${
-                                tre > 0
-                                ? 'text-danger fw-bold'
-                                : ''
-                            }">
-                                ${tre}
-                            </td>
-
-                            <td>
-                                ${gioLam.toFixed(2)}h
-                            </td>
-
-                            <td>
-                                <span class="badge bg-success">
-                                    ${ngayCong.toFixed(2)}
-                                </span>
-                            </td>
-
-                            <td>
-                                ${tangCa.toFixed(2)}h
-                            </td>
-
-                            <td>
-                                ${
-                                    item.LaNgayLe == 1
-                                    ? `
-                                        <span class="badge bg-warning text-dark">
-                                            Ngày lễ
-                                        </span>
-                                      `
-                                    : `
-                                        <span class="badge bg-secondary">
-                                            Ngày thường
-                                        </span>
-                                      `
-                                }
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            document.getElementById("tableData").innerHTML = html;
-
-            document.getElementById("statTongCong").innerText =
-                tongCong.toFixed(2);
-
-            document.getElementById("statTongTre").innerText =
-                tongTre;
-
-            document.getElementById("statTongTangCa").innerText =
-                tongTangCa.toFixed(2);
-
-            updateCheckButtons(data);
-        })
-        .catch(error => {
-            console.error(error);
-
-            document.getElementById("tableData").innerHTML = `
-                <tr>
-                    <td colspan="10" class="text-center text-danger p-4">
-                        Lỗi tải dữ liệu
-                    </td>
-                </tr>
-            `;
+            // 👉 chạy lại script nếu có
+            let scripts = doc.querySelectorAll("script");
+            scripts.forEach(oldScript => {
+                let newScript = document.createElement("script");
+                newScript.text = oldScript.text;
+                document.body.appendChild(newScript);
+            });
         });
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| CHECK IN
-|--------------------------------------------------------------------------
-*/
-
-function handleCheckIn() {
-    fetch("/api/cham-cong/check-in", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": csrfToken
-        },
-        body: JSON.stringify({
-            NhanVienId: currentNhanVienId
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        loadChamCongData();
-    })
-    .catch(error => {
-        console.error(error);
-        alert("Lỗi check-in");
+function setActive(element) {
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
     });
+    element.classList.add('active');
+}
+
+// 👉 load mặc định trang nhân viên
+window.onload = function () {
+    loadPage('/nhanvien');
+}
+
+const API_URL = '/api/congviec';
+let currentEditId = null; // Id công việc đang edit
+let currentUploadId = null; // Id công việc đang upload file
+
+// Hàm tải danh sách nhân viên và điền vào select
+async function loadEmployees() {
+    try {
+        let res = await fetch('/api/nhanvien');
+        let json = await res.json();
+        
+        if (json.success && json.data) {
+            let employees = json.data;
+            let selectTask = document.getElementById('task-employee');
+            let selectFilter = document.getElementById('filter-employee');
+            
+            if (selectTask) {
+                selectTask.innerHTML = '<option value="">Chọn nhân viên</option>';
+                employees.forEach(emp => {
+                    let option = document.createElement('option');
+                    option.value = emp.Id;
+                    option.textContent = emp.Ten;
+                    selectTask.appendChild(option);
+                });
+            }
+            
+            if (selectFilter) {
+                selectFilter.innerHTML = '<option value="">Tất cả nhân viên</option>';
+                employees.forEach(emp => {
+                    let option = document.createElement('option');
+                    option.value = emp.Id;
+                    option.textContent = emp.Ten;
+                    selectFilter.appendChild(option);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi tải danh sách nhân viên:', error);
+    }
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CHECK OUT
-|--------------------------------------------------------------------------
-*/
+async function loadData() {
+    let q = document.getElementById('filter-text').value;
+    let status = document.getElementById('filter-status').value;
+    let employee = document.getElementById('filter-employee').value;
+    let sortBy = document.getElementById('filter-sort-by').value;
+    let sortOrder = document.getElementById('filter-sort-order').value;
 
-function handleCheckOut() {
-    fetch("/api/cham-cong/check-out", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": csrfToken
-        },
-        body: JSON.stringify({
-            NhanVienId: currentNhanVienId
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert(data.message);
-        loadChamCongData();
-    })
-    .catch(error => {
-        console.error(error);
-        alert("Lỗi check-out");
-    });
+    let url = new URL(API_URL, window.location.origin);
+    if (q) url.searchParams.set('q', q);
+    if (status) url.searchParams.set('trang_thai', status);
+    if (employee) url.searchParams.set('nhan_vien_id', employee);
+    url.searchParams.set('sort_by', sortBy);
+    url.searchParams.set('sort_order', sortOrder);
+
+    try {
+        let res = await fetch(url.toString());
+        let json = await res.json();
+        let tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+
+        json.data.forEach(item => {
+            let daysText = item.days_remaining === null ? '' : (item.days_remaining < 0 ? 'Quá hạn ' + Math.abs(item.days_remaining) + ' ngày' : item.days_remaining === 0 ? 'Hết hạn hôm nay' : item.days_remaining + ' ngày');
+            let attachText = item.attachment_count ? item.attachment_count + ' file' : 'Chưa có';
+
+            let row = `
+                <tr class="text-center align-middle">
+                    <td>${item.Id}</td>
+                    <td>${item.TenCongViec || ''}</td>
+                    <td>${item.MoTa || ''}</td>
+                    <td>${item.phong_ban?.TenPhongBan || item.PhongBanId || ''}</td>
+                    <td>${item.NgayBatDau || ''}</td>
+                    <td>${item.NgayKetThuc || ''}</td>
+                    <td>${item.TrangThai || ''}</td>
+                    <td>${daysText}</td>
+                    <td>${item.employee_names || ''}</td>
+                    <td>${attachText}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="setForm(${item.Id})">Sửa</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${item.Id})">Xóa</button>
+                        <button class="btn btn-sm btn-outline-success" onclick="selectFileForTask(${item.Id})">Upload</button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error('Lỗi gọi API:', error);
+    }
 }
 
+// Điền dữ liệu lên form khi bấm sửa
+function setForm(id) {
+    fetch(`${API_URL}/${id}`)
+        .then(res => res.json())
+        .then(json => {
+            if (!json.success) {
+                alert(json.message || 'Không lấy được dữ liệu');
+                return;
+            }
 
-/*
-|--------------------------------------------------------------------------
-| AUTO LOAD
-|--------------------------------------------------------------------------
-*/
+            const item = json.data;
+            currentEditId = item.Id;
+            document.getElementById('task-title').value = item.TenCongViec || '';
+            document.getElementById('task-desc').value = item.MoTa || '';
+            document.getElementById('task-start').value = item.NgayBatDau || '';
+            document.getElementById('task-end').value = item.NgayKetThuc || '';
+            document.getElementById('task-status').value = item.TrangThai || 'Chua bat dau';
+            document.getElementById('task-department').value = item.PhongBanId || '';
+            document.getElementById('task-employee').value = item.nhanViens?.length ? item.nhanViens[0].Id : '';
+        });
+}
 
-loadChamCongData();
+// Reset form sau khi thêm hoặc sửa xong
+function clearForm() {
+    currentEditId = null;
+    document.getElementById('task-title').value = '';
+    document.getElementById('task-desc').value = '';
+    document.getElementById('task-start').value = '';
+    document.getElementById('task-end').value = '';
+    document.getElementById('task-status').value = 'Chua bat dau';
+    document.getElementById('task-department').value = '';
+    document.getElementById('task-employee').value = '';
+}
 
+// Thêm hoặc cập nhật công việc
+async function saveTask() {
+    let payload = {
+        TenCongViec: document.getElementById('task-title').value,
+        MoTa: document.getElementById('task-desc').value,
+        NgayBatDau: document.getElementById('task-start').value,
+        NgayKetThuc: document.getElementById('task-end').value,
+        TrangThai: document.getElementById('task-status').value,
+        PhongBanId: document.getElementById('task-department').value,
+        NhanVienId: document.getElementById('task-employee').value,
+    };
+
+    let method = 'POST';
+    let url = API_URL;
+
+    if (currentEditId) {
+        method = 'PUT';
+        url = `${API_URL}/${currentEditId}`;
+    }
+
+    try {
+        let res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        let json = await res.json();
+
+        if (!json.success) {
+            alert(json.message || 'Lỗi không xác định');
+            return;
+        }
+
+        alert(json.message);
+        clearForm();
+        loadData();
+    } catch (error) {
+        console.error('Lỗi lưu công việc:', error);
+    }
+}
+
+// Xóa công việc
+async function deleteTask(id) {
+    if (!confirm('Bạn có chắc muốn xóa công việc này không?')) {
+        return;
+    }
+
+    try {
+        let res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        let json = await res.json();
+        if (!json.success) {
+            alert(json.message || 'Xóa thất bại');
+            return;
+        }
+
+        alert(json.message);
+        loadData();
+    } catch (error) {
+        console.error('Lỗi xóa công việc:', error);
+    }
+}
+
+// Chọn file để upload cho công việc
+function selectFileForTask(id) {
+    currentUploadId = id;
+    document.getElementById('upload-file').value = '';
+    document.getElementById('upload-file').click();
+}
+
+// Xử lý upload file chọn xong
+async function handleFileChange(event) {
+    let file = event.target.files[0];
+    if (!file || !currentUploadId) {
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append('attachment', file);
+
+    try {
+        let res = await fetch(`${API_URL}/${currentUploadId}/files`, {
+            method: 'POST',
+            body: formData,
+        });
+        let json = await res.json();
+
+        if (!json.success) {
+            alert(json.message || 'Upload thất bại');
+            return;
+        }
+
+        alert(json.message);
+        loadData();
+    } catch (error) {
+        console.error('Lỗi upload file:', error);
+    }
+}
+
+clearForm();
+loadEmployees();
+loadData();
 </script>
+
+</body>
+</html>
