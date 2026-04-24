@@ -47,3 +47,5 @@ Route::post('/phongban/{id}/phan-cong',
 // 👉 Xem danh sách nhân viên theo phòng ban
 Route::get('/phongban/{id}/nhan-vien',
     [PhongBanController::class, 'danhSachNhanVien'])->name('phongban.nhanvien');
+// Route để xử lý dữ liệu khi bấm nút Lưu sửa phòng ban
+Route::put('/phongban/{id}/sua', [PhongBanController::class, 'update'])->name('phongban.update');

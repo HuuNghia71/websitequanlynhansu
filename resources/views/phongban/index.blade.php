@@ -68,36 +68,30 @@
             </div>
         </div>
     </div> @foreach($phongBans as $pb)
-    <div class="modal fade" id="modalPhanCong{{ $pb->Id }}" tabindex="-1" aria-hidden="true">
+ <div class="modal fade" id="modalSua{{ $pb->Id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Phân công vào: {{ $pb->TenPhong }}</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Sửa Phòng Ban: {{ $pb->TenPhong }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form onsubmit="phanCongNhanVien(event, {{ $pb->Id }})">
+                <form onsubmit="suaPhongBan(event, {{ $pb->Id }})">
                     @csrf
+                    @method('PUT')
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Chọn nhân viên <span class="text-danger">*</span></label>
-                            <select class="form-select" name="NhanVienId" required>
-                                <option value="">-- Lựa chọn nhân viên --</option>
-                                @if(isset($nhanViens))
-                                    @foreach($nhanViens as $nv)
-                                        <option value="{{ $nv->Id }}">{{ $nv->Id }} - {{ $nv->Ten }} ({{ $nv->Email }})</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <small class="text-muted mt-2 d-block">Hệ thống sẽ tự động chuyển công tác nếu nhân viên đang ở phòng khác.</small>
+                            <label class="form-label fw-bold">Tên phòng ban <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="TenPhong" value="{{ $pb->TenPhong }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả</label>
+                            <textarea class="form-control" name="MoTa" rows="3">{{ $pb->MoTa }}</textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Xác nhận</button>
+                        <button type="submit" class="btn btn-warning"><i class="bi bi-save me-1"></i> Lưu thay đổi</button>
                     </div>
-                    <a href="{{ route('phongban.nhanvien', $pb->Id) }}" class="btn btn-info btn-sm">
-                     👁️ Xem nhân viên
-                    </a>
                 </form>
             </div>
         </div>
@@ -200,5 +194,30 @@ function dongModal(modalId) {
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
     document.body.style = '';
+}
+
+// Cập nhật phòng ban
+function suaPhongBan(event, phongBanId) {
+    event.preventDefault();
+    let form = event.target;
+    let formData = new FormData(form);
+
+    fetch(`/phongban/${phongBanId}/sua`, {
+        method: "POST", // Laravel sẽ tự nhận diện @method('PUT') từ form
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(response => {
+        if (response.ok) {
+            dongModal(`modalSua${phongBanId}`); // Đóng modal hiện tại
+            loadPage('/phongban');              // Tải lại danh sách
+        } else {
+            alert("Lỗi! Không thể cập nhật dữ liệu.");
+        }
+    })
+    .catch(error => { 
+        console.error(error);
+        alert("Lỗi kết nối mạng."); 
+    });
 }
 </script>
