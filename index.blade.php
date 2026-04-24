@@ -1,221 +1,199 @@
-<!-- resources/views/chamcong.blade.php -->
+<!-- resources/views/chamcong/index.blade.php -->
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Chấm Công</title>
+<div id="app-content">
 
-    <!-- CSRF Token -->
+    <!-- CSRF -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
 
-<body class="bg-light">
+    <div class="container-fluid mt-4">
 
-<div class="container-fluid mt-4">
+        <!-- HEADER -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary mb-0">
+                <i class="fas fa-clock me-2"></i>
+                Quản Lý Chấm Công
+            </h3>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="text-primary mb-0">
-            <i class="fas fa-clock me-2"></i>Quản Lý Chấm Công
-        </h3>
-
-        <div class="text-muted" id="realTimeClock">
-            Đang tải thời gian...
-        </div>
-    </div>
-
-    <!-- Checkin + Statistics -->
-    <div class="row mb-4">
-
-        <!-- Check-in Check-out -->
-        <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body text-center py-4">
-
-                    <h5 class="text-muted mb-3">
-                        Thao tác hôm nay
-                    </h5>
-
-                    <button
-                        id="btnCheckIn"
-                        class="btn btn-success btn-lg me-2"
-                        onclick="handleCheckIn()"
-                    >
-                        <i class="fas fa-sign-in-alt me-2"></i>
-                        Check-in
-                    </button>
-
-                    <button
-                        id="btnCheckOut"
-                        class="btn btn-danger btn-lg"
-                        onclick="handleCheckOut()"
-                    >
-                        <i class="fas fa-sign-out-alt me-2"></i>
-                        Check-out
-                    </button>
-
-                    <small class="text-muted d-block mt-3">
-                        * Giờ vào quy định: 08:00 | Giờ ra: 17:30
-                    </small>
-
-                </div>
+            <div class="text-muted fw-semibold" id="realTimeClock">
+                Đang tải thời gian...
             </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="col-md-6 col-lg-8 mb-3">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
+        <!-- CHECK IN + THỐNG KÊ -->
+        <div class="row mb-4">
 
-                    <h5 class="text-muted mb-3">
-                        Thống kê tháng này
-                    </h5>
+            <!-- CHECK IN -->
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center py-4">
 
-                    <div class="row">
+                        <h5 class="text-muted mb-3">Thao tác hôm nay</h5>
 
-                        <div class="col-md-4">
-                            <div class="bg-light rounded p-3 text-center">
-                                <h4 class="text-success" id="statTongCong">0</h4>
-                                <small>Tổng ngày công</small>
+                        <button id="btnCheckIn"
+                            class="btn btn-success btn-lg me-2"
+                            onclick="handleCheckIn()">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Check-in
+                        </button>
+
+                        <button id="btnCheckOut"
+                            class="btn btn-danger btn-lg"
+                            onclick="handleCheckOut()">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Check-out
+                        </button>
+
+                        <small class="text-muted d-block mt-3">
+                            * Giờ vào quy định: 08:00 | Giờ ra: 17:30
+                        </small>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- THỐNG KÊ -->
+            <div class="col-md-6 col-lg-8 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+
+                        <h5 class="text-muted mb-3">Thống kê tháng này</h5>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="bg-light rounded p-3 text-center">
+                                    <h4 id="statTongCong" class="text-success fw-bold">0</h4>
+                                    <small>Tổng ngày công</small>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-4">
-                            <div class="bg-light rounded p-3 text-center">
-                                <h4 class="text-warning" id="statTongTre">0</h4>
-                                <small>Tổng phút trễ</small>
+                            <div class="col-md-4">
+                                <div class="bg-light rounded p-3 text-center">
+                                    <h4 id="statTongTre" class="text-warning fw-bold">0</h4>
+                                    <small>Tổng phút trễ</small>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="col-md-4">
-                            <div class="bg-light rounded p-3 text-center">
-                                <h4 class="text-info" id="statTongTangCa">0</h4>
-                                <small>Giờ tăng ca</small>
+                            <div class="col-md-4">
+                                <div class="bg-light rounded p-3 text-center">
+                                    <h4 id="statTongTangCa" class="text-info fw-bold">0</h4>
+                                    <small>Giờ tăng ca</small>
+                                </div>
                             </div>
                         </div>
 
                     </div>
-
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Table -->
-    <div class="card shadow-sm border-0">
-
-        <div class="card-header bg-white">
-
-            <div class="row align-items-center">
-
-                <div class="col-md-3">
-                    <h5 class="mb-0">Lịch sử chấm công</h5>
-                </div>
-
-                <div class="col-md-9 text-end">
-
-                    <!-- Lọc theo mã nhân viên -->
-                    <input
-                        type="text"
-                        id="filterMaNhanVien"
-                        class="form-control d-inline w-auto"
-                        placeholder="Mã nhân viên"
-                    >
-
-                    <!-- Lọc theo tháng -->
-                    <select id="filterThang" class="form-select d-inline w-auto">
-                        @for($i = 1; $i <= 12; $i++)
-                            <option
-                                value="{{ $i }}"
-                                {{ $i == date('m') ? 'selected' : '' }}
-                            >
-                                Tháng {{ $i }}
-                            </option>
-                        @endfor
-                    </select>
-
-                    <!-- Lọc theo năm -->
-                    <select id="filterNam" class="form-select d-inline w-auto">
-                        <option value="2025">2025</option>
-                        <option value="2026" selected>2026</option>
-                    </select>
-
-                    <!-- Nút lọc -->
-                    <button
-                        class="btn btn-primary"
-                        onclick="loadChamCongData()"
-                    >
-                        <i class="fas fa-filter me-2"></i>
-                        Lọc
-                    </button>
-
                 </div>
             </div>
 
         </div>
 
-        <div class="card-body p-0">
+        <!-- TABLE -->
+        <div class="card shadow-sm border-0">
 
-            <table class="table table-hover mb-0">
+            <div class="card-header bg-white">
 
-                <thead class="table-light">
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Mã NV</th>
-                        <th>Giờ vào</th>
-                        <th>Giờ ra</th>
-                        <th>Trễ (Phút)</th>
-                        <th>Số giờ làm</th>
-                        <th>Công</th>
-                        <th>Tăng ca</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
+                <div class="row align-items-center">
 
-                <tbody id="tableData">
-                    <tr>
-                        <td colspan="9" class="text-center p-4">
-                            Đang tải dữ liệu...
-                        </td>
-                    </tr>
-                </tbody>
+                    <div class="col-md-3">
+                        <h5 class="mb-0">Lịch sử chấm công</h5>
+                    </div>
 
-            </table>
+                    <div class="col-md-9 text-end">
+
+                        <!-- LỌC MÃ NHÂN VIÊN -->
+                        <input
+                            type="text"
+                            id="filterMaNhanVien"
+                            class="form-control d-inline w-auto"
+                            placeholder="VD: #1 hoặc 1">
+
+                        <!-- LỌC THÁNG -->
+                        <select id="filterThang" class="form-select d-inline w-auto">
+                            @for($i = 1; $i <= 12; $i++)
+                                <option value="{{ $i }}" {{ $i == date('n') ? 'selected' : '' }}>
+                                    Tháng {{ $i }}
+                                </option>
+                            @endfor
+                        </select>
+
+                        <!-- LỌC NĂM -->
+                        <select id="filterNam" class="form-select d-inline w-auto">
+                            @for($y = 2025; $y <= 2030; $y++)
+                                <option value="{{ $y }}" {{ $y == date('Y') ? 'selected' : '' }}>
+                                    Năm {{ $y }}
+                                </option>
+                            @endfor
+                        </select>
+
+                        <button
+                            class="btn btn-primary"
+                            onclick="loadChamCongData()">
+                            Lọc
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-body p-0">
+
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Mã NV</th>
+                            <th>Tên nhân viên</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
+                            <th>Trễ (Phút)</th>
+                            <th>Số giờ làm</th>
+                            <th>Công</th>
+                            <th>Tăng ca</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tableData">
+                        <tr>
+                            <td colspan="10" class="text-center p-4">
+                                Đang tải dữ liệu...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
 
         </div>
-    </div>
 
+    </div>
 </div>
 
 <script>
 
-const currentNhanVienId = {{ auth()->user()->id ?? 1 }};
+let currentNhanVienId = document.body.dataset.userId || 1;
 
-const csrfToken = document.querySelector(
-    'meta[name="csrf-token"]'
-).content;
-
+let csrfToken = document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
 
 /*
 |--------------------------------------------------------------------------
-| Đồng hồ thời gian thực
+| CLOCK
 |--------------------------------------------------------------------------
 */
 
 function updateClock() {
     const now = new Date();
 
-    document.getElementById('realTimeClock').innerHTML =
-        `${now.toLocaleDateString('vi-VN')} | ${now.toLocaleTimeString('vi-VN')}`;
+    document.getElementById("realTimeClock").innerHTML =
+        now.toLocaleDateString("vi-VN") + " | " +
+        now.toLocaleTimeString("vi-VN");
 }
 
 setInterval(updateClock, 1000);
@@ -224,43 +202,96 @@ updateClock();
 
 /*
 |--------------------------------------------------------------------------
-| Load dữ liệu bảng + lọc theo mã nhân viên
+| FORMAT TODAY YYYY-MM-DD
+|--------------------------------------------------------------------------
+*/
+
+function getTodayVN() {
+    const now = new Date();
+    const offset = 7 * 60;
+
+    const local = new Date(
+        now.getTime() +
+        (offset - now.getTimezoneOffset()) * 60000
+    );
+
+    return local.toISOString().split("T")[0];
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE BUTTON STATE
+|--------------------------------------------------------------------------
+*/
+
+function updateCheckButtons(data) {
+    const btnIn = document.getElementById("btnCheckIn");
+    const btnOut = document.getElementById("btnCheckOut");
+
+    const today = getTodayVN();
+
+    const record = data.find(item =>
+        item.NhanVienId == currentNhanVienId &&
+        item.Ngay === today
+    );
+
+    btnIn.disabled = false;
+    btnOut.disabled = false;
+
+    if (record) {
+        btnIn.disabled = true;
+
+        if (record.GioRa) {
+            btnOut.disabled = true;
+        }
+    }
+
+    btnIn.classList.toggle("btn-secondary", btnIn.disabled);
+    btnOut.classList.toggle("btn-secondary", btnOut.disabled);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOAD DATA
 |--------------------------------------------------------------------------
 */
 
 function loadChamCongData() {
+    const maNhanVien = document
+        .getElementById("filterMaNhanVien")
+        .value
+        .trim();
 
-    const maNhanVien = document.getElementById('filterMaNhanVien').value;
-    const thang = document.getElementById('filterThang').value;
-    const nam = document.getElementById('filterNam').value;
-    const tbody = document.getElementById('tableData');
+    const thang = document
+        .getElementById("filterThang")
+        .value;
 
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="9" class="text-center p-4">
-                Đang tải dữ liệu...
-            </td>
-        </tr>
-    `;
+    const nam = document
+        .getElementById("filterNam")
+        .value;
 
     let url = `/api/cham-cong?thang=${thang}&nam=${nam}`;
 
-    // Nếu có nhập mã nhân viên thì thêm vào URL
-    if (maNhanVien.trim() !== '') {
-        url += `&ma_nhan_vien=${maNhanVien}`;
+    if (maNhanVien !== "") {
+        url += `&ma_nhan_vien=${encodeURIComponent(maNhanVien)}`;
     }
 
     fetch(url)
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
 
-            let html = '';
+            let html = "";
+            let tongCong = 0;
+            let tongTre = 0;
+            let tongTangCa = 0;
 
-            if (data.length === 0) {
+            if (!data.length) {
                 html = `
                     <tr>
-                        <td colspan="9" class="text-center text-danger p-4">
-                            Không có dữ liệu
+                        <td colspan="10" class="text-center text-danger p-4">
+                            Không có dữ liệu chấm công
                         </td>
                     </tr>
                 `;
@@ -268,21 +299,98 @@ function loadChamCongData() {
 
                 data.forEach(item => {
 
+                    let tre = Math.max(
+                        0,
+                        parseInt(item.SoPhutTre || 0)
+                    );
+
+                    let gioLam = Math.max(
+                        0,
+                        parseFloat(item.SoGioLam || 0)
+                    );
+
+                    let tangCa = Math.max(
+                        0,
+                        parseFloat(item.SoGioTangCa || 0)
+                    );
+
+                    let ngayCong = parseFloat(
+                        item.SoNgayCong || 0
+                    );
+
+                    tongCong += ngayCong;
+                    tongTre += tre;
+                    tongTangCa += tangCa;
+
                     html += `
                         <tr>
                             <td>${item.Ngay}</td>
-                            <td>${item.MaNhanVien ?? '--'}</td>
-                            <td class="text-success">${item.GioVao ?? '--:--'}</td>
-                            <td class="text-danger">${item.GioRa ?? '--:--'}</td>
-                            <td>${item.SoPhutTre}</td>
-                            <td>${item.SoGioLam}</td>
-                            <td>${item.SoNgayCong}</td>
-                            <td>${item.SoGioTangCa}</td>
+
+                            <td>
+                                <span class="fw-bold text-dark">
+                                    #${item.NhanVienId}
+                                </span>
+                            </td>
+
+                            <td class="fw-bold text-primary">
+                                ${
+                                    item.TenNhanVien
+                                    ?? item.nhan_vien?.Ten
+                                    ?? 'Chưa xác định'
+                                }
+                            </td>
+
+                            <td>
+                                ${
+                                    item.GioVao
+                                    ? item.GioVao.split(' ')[1]
+                                    : '--'
+                                }
+                            </td>
+
+                            <td>
+                                ${
+                                    item.GioRa
+                                    ? item.GioRa.split(' ')[1]
+                                    : '--'
+                                }
+                            </td>
+
+                            <td class="${
+                                tre > 0
+                                ? 'text-danger fw-bold'
+                                : ''
+                            }">
+                                ${tre}
+                            </td>
+
+                            <td>
+                                ${gioLam.toFixed(2)}h
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success">
+                                    ${ngayCong.toFixed(2)}
+                                </span>
+                            </td>
+
+                            <td>
+                                ${tangCa.toFixed(2)}h
+                            </td>
+
                             <td>
                                 ${
                                     item.LaNgayLe == 1
-                                    ? '<span class="badge bg-warning">Ngày lễ</span>'
-                                    : '<span class="badge bg-secondary">Ngày thường</span>'
+                                    ? `
+                                        <span class="badge bg-warning text-dark">
+                                            Ngày lễ
+                                        </span>
+                                      `
+                                    : `
+                                        <span class="badge bg-secondary">
+                                            Ngày thường
+                                        </span>
+                                      `
                                 }
                             </td>
                         </tr>
@@ -290,14 +398,25 @@ function loadChamCongData() {
                 });
             }
 
-            tbody.innerHTML = html;
+            document.getElementById("tableData").innerHTML = html;
+
+            document.getElementById("statTongCong").innerText =
+                tongCong.toFixed(2);
+
+            document.getElementById("statTongTre").innerText =
+                tongTre;
+
+            document.getElementById("statTongTangCa").innerText =
+                tongTangCa.toFixed(2);
+
+            updateCheckButtons(data);
         })
         .catch(error => {
-            console.log(error);
+            console.error(error);
 
-            tbody.innerHTML = `
+            document.getElementById("tableData").innerHTML = `
                 <tr>
-                    <td colspan="9" class="text-center text-danger p-4">
+                    <td colspan="10" class="text-center text-danger p-4">
                         Lỗi tải dữ liệu
                     </td>
                 </tr>
@@ -308,118 +427,68 @@ function loadChamCongData() {
 
 /*
 |--------------------------------------------------------------------------
-| Check In
+| CHECK IN
 |--------------------------------------------------------------------------
 */
 
 function handleCheckIn() {
-
-    if (!confirm("Bạn muốn Check-in?")) return;
-
-    fetch('/api/cham-cong/check-in', {
-        method: 'POST',
+    fetch("/api/cham-cong/check-in", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": csrfToken
         },
         body: JSON.stringify({
             NhanVienId: currentNhanVienId
         })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
         alert(data.message);
         loadChamCongData();
     })
     .catch(error => {
-        console.log(error);
-        alert("Lỗi hệ thống khi Check-in");
+        console.error(error);
+        alert("Lỗi check-in");
     });
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Check Out
+| CHECK OUT
 |--------------------------------------------------------------------------
 */
 
 function handleCheckOut() {
-
-    if (!confirm("Bạn muốn Check-out?")) return;
-
-    fetch('/api/cham-cong/check-out', {
-        method: 'POST',
+    fetch("/api/cham-cong/check-out", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": csrfToken
         },
         body: JSON.stringify({
             NhanVienId: currentNhanVienId
         })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
         alert(data.message);
         loadChamCongData();
     })
     .catch(error => {
-        console.log(error);
-        alert("Lỗi hệ thống khi Check-out");
+        console.error(error);
+        alert("Lỗi check-out");
     });
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Load khi mở trang
+| AUTO LOAD
 |--------------------------------------------------------------------------
 */
 
-document.addEventListener(
-    'DOMContentLoaded',
-    loadChamCongData
-);
+loadChamCongData();
 
 </script>
-
-<!-- Code injected by live-server -->
-<script>
-	// <![CDATA[  <-- For SVG support
-	if ('WebSocket' in window) {
-		(function () {
-			function refreshCSS() {
-				var sheets = [].slice.call(document.getElementsByTagName("link"));
-				var head = document.getElementsByTagName("head")[0];
-				for (var i = 0; i < sheets.length; ++i) {
-					var elem = sheets[i];
-					var parent = elem.parentElement || head;
-					parent.removeChild(elem);
-					var rel = elem.rel;
-					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
-						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
-						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
-					}
-					parent.appendChild(elem);
-				}
-			}
-			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
-			var address = protocol + window.location.host + window.location.pathname + '/ws';
-			var socket = new WebSocket(address);
-			socket.onmessage = function (msg) {
-				if (msg.data == 'reload') window.location.reload();
-				else if (msg.data == 'refreshcss') refreshCSS();
-			};
-			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
-				console.log('Live reload enabled.');
-				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
-			}
-		})();
-	}
-	else {
-		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
-	}
-	// ]]>
-</script>
-</body>
-</html>

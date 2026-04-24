@@ -4,116 +4,211 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ChamCong;
-use App\Models\NgayLe;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
 
 class ChamCongController extends Controller
 {
-    // Lấy danh sách lịch sử chấm công
+    /*
+    |--------------------------------------------------------------------------
+    | DANH SÁCH CHẤM CÔNG + LỌC + HIỂN THỊ TÊN NHÂN VIÊN
+    |--------------------------------------------------------------------------
+    */
+
     public function index(Request $request)
     {
         $query = ChamCong::with('nhanVien');
 
-        if ($request->has('thang') && $request->has('nam')) {
-            $query->whereMonth('Ngay', $request->thang)
-                  ->whereYear('Ngay', $request->nam);
+        /*
+        |--------------------------------------------------------------------------
+        | Lọc theo mã nhân viên
+        | Ví dụ:
+        | 123
+        | 124
+        | 1001
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('ma_nhan_vien')) {
+            $maNhanVien = trim($request->ma_nhan_vien);
+
+            $query->where('NhanVienId', $maNhanVien);
         }
 
-        return response()->json($query->orderBy('Ngay', 'desc')->get());
+        /*
+        |--------------------------------------------------------------------------
+        | Lọc theo tháng
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('thang')) {
+            $query->whereMonth('Ngay', $request->thang);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Lọc theo năm
+        |--------------------------------------------------------------------------
+        */
+        if ($request->filled('nam')) {
+            $query->whereYear('Ngay', $request->nam);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Lấy dữ liệu + ép kiểu + format thời gian chuẩn
+        |--------------------------------------------------------------------------
+        */
+        $data = $query
+            ->orderBy('Ngay', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'Id' => $item->Id,
+
+                    'NhanVienId' => $item->NhanVienId,
+
+                    'TenNhanVien' => optional($item->nhanVien)->Ten
+                        ?? 'Chưa xác định',
+
+                    'Ngay' => $item->Ngay,
+
+                    'GioVao' => $item->GioVao
+                        ? Carbon::parse($item->GioVao)
+                            ->format('Y-m-d H:i:s')
+                        : null,
+
+                    'GioRa' => $item->GioRa
+                        ? Carbon::parse($item->GioRa)
+                            ->format('Y-m-d H:i:s')
+                        : null,
+
+                    'SoPhutTre' => (int) ($item->SoPhutTre ?? 0),
+
+                    'SoGioLam' => (float) ($item->SoGioLam ?? 0),
+
+                    'SoNgayCong' => (float) ($item->SoNgayCong ?? 0),
+
+                    'SoGioTangCa' => (float) ($item->SoGioTangCa ?? 0),
+
+                    'LaNgayLe' => (int) ($item->LaNgayLe ?? 0),
+                ];
+            });
+
+        return response()->json($data);
     }
 
-    // Check-in sáng
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK IN
+    |--------------------------------------------------------------------------
+    */
+
     public function checkIn(Request $request)
     {
-        $nhanVienId = $request->NhanVienId;
-        $today = Carbon::today()->format('Y-m-d');
-        $now = Carbon::now();
-
-        $exists = ChamCong::where('NhanVienId', $nhanVienId)->where('Ngay', $today)->first();
-        if ($exists) {
-            return response()->json(['message' => 'Hôm nay bạn đã Check-in rồi!'], 400);
-        }
-
-        $gioQuyDinh = Carbon::createFromTimeString('08:00:00');
-        $soPhutTre = $now->gt($gioQuyDinh) ? $now->diffInMinutes($gioQuyDinh) : 0;
-        $isHoliday = NgayLe::where('Ngay', $today)->exists() ? 1 : 0;
-
-        $chamCong = ChamCong::create([
-            'NhanVienId' => $nhanVienId,
-            'Ngay'       => $today,
-            'GioVao'     => $now,
-            'SoPhutTre'  => $soPhutTre,
-            'LaNgayLe'   => $isHoliday,
-            'SoNgayCong' => 0 
+        $request->validate([
+            'NhanVienId' => 'required|integer'
         ]);
 
-        return response()->json(['message' => 'Check-in thành công', 'data' => $chamCong]);
+        $nhanVienId = $request->NhanVienId;
+
+        $now = Carbon::now('Asia/Ho_Chi_Minh');
+
+        $exists = ChamCong::where('NhanVienId', $nhanVienId)
+            ->whereDate('Ngay', $now->format('Y-m-d'))
+            ->first();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'Hôm nay bạn đã Check-in rồi!'
+            ], 400);
+        }
+
+        $gioQuyDinh = Carbon::today('Asia/Ho_Chi_Minh')
+            ->setTime(8, 0, 0);
+
+        $soPhutTre = $now->gt($gioQuyDinh)
+            ? $now->diffInMinutes($gioQuyDinh)
+            : 0;
+
+        ChamCong::create([
+            'NhanVienId' => $nhanVienId,
+            'Ngay' => $now->format('Y-m-d'),
+            'GioVao' => $now,
+            'GioRa' => null,
+            'SoPhutTre' => $soPhutTre,
+            'SoGioLam' => 0,
+            'SoNgayCong' => 0,
+            'SoGioTangCa' => 0,
+            'LaNgayLe' => 0
+        ]);
+
+        return response()->json([
+            'message' => 'Check-in thành công'
+        ]);
     }
 
-    // Check-out chiều
+
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK OUT
+    |--------------------------------------------------------------------------
+    */
+
     public function checkOut(Request $request)
     {
-        $nhanVienId = $request->NhanVienId;
-        $today = Carbon::today()->format('Y-m-d');
-        $now = Carbon::now();
+        $request->validate([
+            'NhanVienId' => 'required|integer'
+        ]);
 
-        $chamCong = ChamCong::where('NhanVienId', $nhanVienId)->where('Ngay', $today)->first();
-        if (!$chamCong || !$chamCong->GioVao) {
-            return response()->json(['message' => 'Bạn chưa Check-in sáng nay!'], 400);
+        $nhanVienId = $request->NhanVienId;
+
+        $now = Carbon::now('Asia/Ho_Chi_Minh');
+
+        $chamCong = ChamCong::where('NhanVienId', $nhanVienId)
+            ->whereDate('Ngay', $now->format('Y-m-d'))
+            ->first();
+
+        if (!$chamCong) {
+            return response()->json([
+                'message' => 'Bạn chưa Check-in hôm nay'
+            ], 400);
+        }
+
+        if ($chamCong->GioRa) {
+            return response()->json([
+                'message' => 'Bạn đã Check-out rồi'
+            ], 400);
         }
 
         $gioVao = Carbon::parse($chamCong->GioVao);
-        $soGioLam = $now->diffInMinutes($gioVao) / 60;
-        $soNgayCong = $soGioLam >= 8 ? 1 : ($soGioLam >= 4 ? 0.5 : 0);
 
-        $gioKetThucQuyDinh = Carbon::createFromTimeString('17:30:00');
-        $soGioTangCa = $now->gt($gioKetThucQuyDinh) ? $now->diffInMinutes($gioKetThucQuyDinh) / 60 : 0;
+        $soGioLam = max(
+            0,
+            $now->diffInSeconds($gioVao) / 3600
+        );
+
+        $soGioLam = round($soGioLam, 2);
+
+        if ($soGioLam >= 8) {
+            $soNgayCong = 1;
+        } elseif ($soGioLam >= 4) {
+            $soNgayCong = 0.5;
+        } else {
+            $soNgayCong = 0;
+        }
+
+        $soTangCa = $soGioLam > 8
+            ? round($soGioLam - 8, 2)
+            : 0;
 
         $chamCong->update([
-            'GioRa'        => $now,
-            'SoGioLam'     => round($soGioLam, 2),
-            'SoNgayCong'   => $soNgayCong,
-            'SoGioTangCa'  => round($soGioTangCa, 2)
+            'GioRa' => $now,
+            'SoGioLam' => $soGioLam,
+            'SoNgayCong' => $soNgayCong,
+            'SoGioTangCa' => $soTangCa
         ]);
 
-        return response()->json(['message' => 'Check-out thành công', 'data' => $chamCong]);
-    }
-
-    // Xem chi tiết 1 bản ghi
-    public function show($id)
-    {
-        $data = ChamCong::with('nhanVien')->find($id);
-        return $data ? response()->json($data) : response()->json(['message' => 'Không tìm thấy'], 404);
-    }
-
-    // Cập nhật (Dành cho Admin)
-    public function update(Request $request, $id)
-    {
-        $chamCong = ChamCong::findOrFail($id);
-        $chamCong->update($request->all());
-        return response()->json(['message' => 'Cập nhật thành công', 'data' => $chamCong]);
-    }
-
-    // Xóa (Dành cho Admin)
-    public function destroy($id)
-    {
-        ChamCong::destroy($id);
-        return response()->json(['message' => 'Đã xóa bản ghi']);
-    }
-
-    // Thống kê tháng
-    public function summaryByMonth($nhanVienId, $thang, $nam)
-    {
-        $summary = ChamCong::where('NhanVienId', $nhanVienId)
-            ->whereMonth('Ngay', $thang)
-            ->whereYear('Ngay', $nam)
-            ->select(
-                DB::raw('SUM(SoNgayCong) as TongCong'),
-                DB::raw('SUM(SoGioTangCa) as TongTangCa'),
-                DB::raw('SUM(SoPhutTre) as TongTre')
-            )->first();
-        return response()->json($summary);
+        return response()->json([
+            'message' => 'Check-out thành công'
+        ]);
     }
 }
